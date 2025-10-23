@@ -205,14 +205,14 @@ def create_supply_with_items(db: Session, obj_in: SupplyCreate) -> models.Supply
         supply_data_raw = obj_in.model_dump(exclude={"supplies"}, exclude_unset=True)
         supply_data = normalize_payload_dict(supply_data_raw)  # Enum to value
 
-        # 設置必填的時間欄位（Supply 使用 DateTime 存儲時間）
-        now = datetime.now(timezone.utc)
+        # 設置必填的時間欄位（Supply 使用 bigint 存儲 UNIX timestamp）
+        now_timestamp = int(datetime.now(timezone.utc).timestamp())
         db_supply = models.Supply(
             **supply_data,
             valid_pin=generate_pin(),
             spam_warn=False,
-            created_at=now,
-            updated_at=now
+            created_at=now_timestamp,
+            updated_at=now_timestamp
         )
         db.add(db_supply)
         db.flush()  # 先拿到 db_supply.id 供 item 關聯
@@ -434,8 +434,8 @@ def supply_batch_increment_received(db: Session, supply_id: str, item_counts: Di
             current = it.received_count if it.received_count is not None else 0
             it.received_count = current + inc
 
-        # 更新父層 Supply 的 updated_at
-        supply.updated_at = datetime.now(timezone.utc)
+        # 更新父層 Supply 的 updated_at（使用 bigint UNIX timestamp）
+        supply.updated_at = int(datetime.now(timezone.utc).timestamp())
 
         db.add_all(items)
         db.add(supply)

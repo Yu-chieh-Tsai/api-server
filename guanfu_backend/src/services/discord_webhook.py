@@ -38,7 +38,7 @@ def format_human_resource_notification(
     type_display = f"{role_type} / {role_status}" if role_status else role_type
 
     headcount = resource_data.get("headcount_need", 0)
-    unit = resource_data.get("headcount_unit", "人")
+    unit = resource_data.get("headcount_unit") or "人"
 
     notes_parts = []
     if resource_data.get("shift_notes"):
